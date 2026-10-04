@@ -2,12 +2,61 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { saldoMon } from '../lib/mera';
+import { useCuenta } from './CuentaProvider';
 
 const PASOS = ['Tu carnet de identidad', 'Una selfie', 'Tu huella'];
 const CI_VALIDO = /^\d{5,9}(-?[0-9A-Z]{1,2})?$/;
 
 export default function Registro() {
   const router = useRouter();
+  const { direccion, crear, entrar, firmar, enviar } = useCuenta();
+  const [ocupado, setOcupado] = useState(false);
+  const [saldo, setSaldo] = useState(null);
+  const [firma, setFirma] = useState('');
+
+  const conHuella = async (accion) => {
+    setError('');
+    setOcupado(true);
+    try {
+      const { direccion: d } = await accion();
+      saldoMon(d).then(setSaldo).catch(() => setSaldo('?'));
+      setPaso(3);
+    } catch (e) {
+      setError(e?.code === 'PRF_UNAVAILABLE'
+        ? 'Tu dispositivo no soporta PRF. Prueba con 1Password, iCloud Keychain o Chrome con el gestor de Google.'
+        : 'No se pudo usar la huella. Inténtalo de nuevo.');
+    } finally {
+      setOcupado(false);
+    }
+  };
+
+  const [tx, setTx] = useState(null);
+  const [enviando, setEnviando] = useState(false);
+
+  const probarTx = async () => {
+    setError('');
+    setEnviando(true);
+    const t0 = performance.now();
+    try {
+      if (Number(await saldoMon(direccion)) === 0) {
+        setError('Tu cuenta no tiene MON para el gas. Pide MON de prueba en el faucet y reintenta.');
+        return;
+      }
+      const hash = await enviar();
+      setTx({ hash, seg: ((performance.now() - t0) / 1000).toFixed(1) });
+      saldoMon(direccion).then(setSaldo).catch(() => {});
+    } catch (e) {
+      setError(`No se pudo enviar la transacción: ${e?.shortMessage || 'error desconocido'}`);
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  const probarFirma = async () => {
+    const msg = `Garante: prueba de firma ${new Date().toISOString()}`;
+    setFirma(await firmar(msg));
+  };
   const [paso, setPaso] = useState(0);
   const [ci, setCi] = useState('');
   const [foto, setFoto] = useState(null);
@@ -106,6 +155,7 @@ export default function Registro() {
 
               {error && <p className="error" role="alert">{error}</p>}
               <button className="boton" onClick={continuarCarnet}>Continuar</button>
+              <button className="boton sec" disabled={ocupado} onClick={() => conHuella(entrar)}>Ya tengo cuenta: entrar con mi huella</button>
               <div className="sep">o</div>
               <button className="boton sec" onClick={() => router.push('/tablon')}>Soy juez: entrar con una cuenta de prueba</button>
               <p className="aviso">Tu carnet nunca se publica. En la blockchain solo queda que eres una persona verificada.</p>
@@ -141,8 +191,34 @@ export default function Registro() {
             <>
               <h2>Tu huella será tu llave</h2>
               <p className="sub">Sin contraseñas ni frases semilla.</p>
-              <button className="boton" onClick={() => router.push('/tablon')}>Crear cuenta con mi huella</button>
+              {error && <p className="error" role="alert">{error}</p>}
+              <button className="boton" disabled={ocupado} onClick={() => conHuella(() => crear(`garante-${ci || 'usuario'}`))}>
+                {ocupado ? 'Esperando tu huella…' : 'Crear cuenta con mi huella'}
+              </button>
               <button className="boton sec" onClick={() => setPaso(1)}>Volver</button>
+            </>
+          )}
+
+          {paso === 3 && (
+            <>
+              <h2>Cuenta lista</h2>
+              <p className="sub">Se creó desde tu huella. Sin contraseña, sin frase semilla.</p>
+              <div className="dato"><span>Dirección en Monad</span><code>{direccion}</code></div>
+              <div className="dato"><span>Saldo</span><code>{saldo === null ? 'consultando…' : `${Number(saldo).toFixed(4)} MON`}</code></div>
+              <button className="boton sec" onClick={probarFirma}>Firmar un mensaje sin pedir la huella</button>
+              {firma && <div className="dato"><span>Firma</span><code>{firma.slice(0, 40)}…</code></div>}
+              <button className="boton sec" disabled={enviando} onClick={probarTx}>
+                {enviando ? 'Enviando a Monad…' : 'Enviar transacción de prueba (0 MON)'}
+              </button>
+              {error && <p className="error" role="alert">{error}</p>}
+              {tx && (
+                <div className="dato">
+                  <span>Confirmada en {tx.seg} s</span>
+                  <a href={`https://testnet.monadexplorer.com/tx/${tx.hash}`} target="_blank" rel="noreferrer"><code>{tx.hash.slice(0, 26)}…</code></a>
+                </div>
+              )}
+              <p className="aviso"><a href="https://faucet.monad.xyz/" target="_blank" rel="noreferrer">Pedir MON de prueba (faucet)</a></p>
+              <button className="boton" onClick={() => router.push('/tablon')}>Ir al Tablón</button>
             </>
           )}
         </div>
