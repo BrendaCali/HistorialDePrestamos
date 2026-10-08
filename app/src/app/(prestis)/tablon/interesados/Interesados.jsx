@@ -1,11 +1,12 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import Icono from '../../_componentes/Icono';
 
 const CANDIDATOS = [
   {
-    nombre: 'José Ramírez', foto: '/img/jose-ramirez.jpg', insignia: '🤝 Cumplido',
+    id: 'jose', nombre: 'José Ramírez', foto: '/img/jose-ramirez.jpg', insignia: '🤝 Cumplido',
     claseInsignia: 'bg-surface-container-highest text-secondary',
     puntos: '740 pts', detalle: '4 personas distintas', puntualidad: '92%', colorPuntualidad: 'text-tertiary',
     etiquetas: [
@@ -14,7 +15,7 @@ const CANDIDATOS = [
     ],
   },
   {
-    nombre: 'María Quispe', foto: '/img/maria-quispe.jpg', insignia: '⭐ Muy cumplida',
+    id: 'maria', nombre: 'María Quispe', foto: '/img/maria-quispe.jpg', insignia: '⭐ Muy cumplida',
     claseInsignia: 'bg-primary-container/20 text-primary', destacado: true,
     puntos: '890 pts', detalle: '12 tratos cumplidos', puntualidad: '98%', colorPuntualidad: 'text-primary',
     etiquetas: [
@@ -27,7 +28,7 @@ const CANDIDATOS = [
 const COMPARATIVA = [
   { metrica: 'Puntaje Monad', jose: '740 pts', maria: '890 pts ⭐' },
   { metrica: '% Puntualidad', jose: '92%', maria: '98%', barras: [92, 98] },
-  { metrica: 'Total Devuelto', jose: 'Bs 4,800', maria: 'Bs 18,500' },
+  { metrica: 'Total Devuelto', jose: 'Bs 1,000–5,000', maria: 'Bs 10,000–20,000', texto: true },
   { metrica: 'Historial Atrasos', jose: '1 leve (<48h)', maria: '0 impecable', mariaClase: 'text-tertiary' },
   { metrica: 'Círculos de aval', jose: 'Mercado Lanza', maria: 'Feria 16 de Julio', texto: true },
 ];
@@ -98,10 +99,10 @@ export default function Interesados() {
                 <Icono nombre="how_to_reg" tam={18} />
                 Elegir para trato
               </button>
-              <button type="button" aria-label={`Ver perfil de ${c.nombre}`} onClick={() => avisar(`Verificando credenciales Monad de ${c.nombre}...`, 'verified')}
+              <Link href={`/perfil/${c.id}`} aria-label={`Ver perfil de ${c.nombre}`}
                 className="w-11 h-11 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface flex items-center justify-center shrink-0 transition-colors">
                 <Icono nombre="visibility" tam={20} />
-              </button>
+              </Link>
             </div>
           </div>
         ))}
@@ -128,11 +129,11 @@ export default function Interesados() {
           </div>
           <div className="flex items-center justify-between pt-space-xs">
             <span className="font-body-sm text-body-sm text-on-surface-variant">Requiere aval social adicional</span>
-            <button type="button" onClick={() => avisar('Seleccionaste a Carlos V. para coordinar firma', 'fingerprint')}
+            <Link href="/perfil/carlos"
               className="h-9 px-space-sm rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-md text-label-md flex items-center gap-1.5 transition-colors">
               <span>Evaluar</span>
               <Icono nombre="chevron_right" tam={16} />
-            </button>
+            </Link>
           </div>
         </div>
       </div>

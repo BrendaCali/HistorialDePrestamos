@@ -1,6 +1,8 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useCuenta } from '../../CuentaProvider';
 import Icono from '../_componentes/Icono';
 
 export function BotonCopiar({ direccion, corta }) {
@@ -94,5 +96,42 @@ export function AtestacionQR() {
         </div>
       )}
     </>
+  );
+}
+
+// Muestra la cuenta con la que se entró (Mera). Sin sesión, invita a entrar con la huella.
+export function CabeceraPropia() {
+  const { direccion } = useCuenta();
+  return (
+    <div className="relative w-full rounded-xl bg-surface-container p-space-md shadow-xl overflow-hidden mt-space-sm">
+      <div className="absolute -right-10 -top-10 w-36 h-36 rounded-full bg-primary/10 blur-2xl pointer-events-none" />
+      <div className="flex items-start justify-between gap-space-sm relative z-10">
+        <div className="flex items-center gap-space-sm min-w-0">
+          <div className="relative w-14 h-14 rounded-full bg-surface-container-high flex items-center justify-center p-1 shrink-0 shadow-md">
+            <img src="/img/logo-condor.png" alt="Emblema Cóndor" className="w-full h-full object-contain drop-shadow" />
+            {direccion && (
+              <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-primary flex items-center justify-center text-on-primary">
+                <Icono nombre="verified" tam={11} relleno />
+              </span>
+            )}
+          </div>
+          <div className="flex flex-col min-w-0">
+            <span className="font-headline-sm text-headline-sm text-on-surface truncate">{direccion ? 'Tu cuenta' : 'Sin sesión'}</span>
+            {direccion ? (
+              <BotonCopiar direccion={direccion} corta={`${direccion.slice(0, 6)}…${direccion.slice(-4)}`} />
+            ) : (
+              <Link href="/" className="font-label-md text-label-md text-primary hover:underline">Entrar con huella</Link>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-col items-end gap-1 shrink-0">
+          <span className="font-label-sm text-label-sm uppercase px-2 py-0.5 rounded-full bg-primary-container/20 text-primary flex items-center gap-1 font-semibold">🌱 Nuevo</span>
+          <span className="font-metric-mono text-label-sm uppercase px-2 py-0.5 rounded-full bg-surface-container-highest text-secondary-fixed flex items-center gap-1">
+            <Icono nombre="badge" tam={11} className="text-tertiary" />
+            Carnet 1:1
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }

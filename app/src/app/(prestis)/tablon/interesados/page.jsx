@@ -2,14 +2,14 @@ import { EncabezadoDetalle } from '../../_componentes/Encabezado';
 import Icono from '../../_componentes/Icono';
 import Interesados from './Interesados';
 
-export const metadata = { title: 'Detalle del trato · Garante' };
+export const metadata = { title: 'Detalle del trato · Preste' };
 
 export default function DetalleTrato() {
   return (
     <>
       <EncabezadoDetalle titulo="Detalle Del Trato" volverA="/tablon" />
       <main className="flex flex-col relative w-full pt-16 pb-safe">
-        <div className="flex flex-col w-full pt-space-sm pb-10 px-margin gap-space-lg">
+        <div className="flex flex-col w-full mx-auto max-w-3xl pt-space-sm pb-10 px-margin gap-space-lg">
           <div className="bg-surface-container rounded-xl p-space-md shadow-lg relative overflow-hidden">
             <div className="absolute -right-10 -top-10 w-32 h-32 rounded-full bg-primary/10 blur-2xl pointer-events-none" />
             <div className="flex items-start justify-between gap-space-sm mb-space-sm">

@@ -5,6 +5,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--fuente-inter' });
 const jakarta = Plus_Jakarta_Sans({ subsets: ['latin'], weight: ['600', '700', '800'], variable: '--fuente-jakarta' });
 const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--fuente-mono' });
 
+// Celular: una columna con barra inferior. Pantalla ancha (md+): menú lateral fijo de 16 rem y el contenido al lado.
 export default function PrestisLayout({ children }) {
   return (
     <>
@@ -14,7 +15,7 @@ export default function PrestisLayout({ children }) {
         precedence="default"
       />
       <div
-        className={`${inter.variable} ${jakarta.variable} ${mono.variable} font-body-md text-body-md text-on-surface bg-surface min-h-dvh mx-auto max-w-md relative flex flex-col`}
+        className={`${inter.variable} ${jakarta.variable} ${mono.variable} font-body-md text-body-md text-on-surface bg-surface min-h-dvh md:pl-64 relative flex flex-col`}
       >
         {children}
       </div>

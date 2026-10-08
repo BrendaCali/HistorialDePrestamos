@@ -2,7 +2,7 @@ import './globals.css';
 import CuentaProvider from './CuentaProvider';
 
 export const metadata = {
-  title: 'Garante',
+  title: 'Preste',
   description: 'Tu palabra ahora tiene historial.',
 };
 

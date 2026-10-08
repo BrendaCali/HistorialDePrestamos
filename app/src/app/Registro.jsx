@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { saldoMon } from '../lib/mera';
+import { actividad } from '../lib/alchemy';
 import { useCuenta } from './CuentaProvider';
 
 const PASOS = ['Tu carnet de identidad', 'Una selfie', 'Tu huella'];
@@ -14,6 +15,10 @@ export default function Registro() {
   const [ocupado, setOcupado] = useState(false);
   const [saldo, setSaldo] = useState(null);
   const [firma, setFirma] = useState('');
+  const [movs, setMovs] = useState(null);
+  const [avisos, setAvisos] = useState([]);
+
+  const cargarActividad = (d) => actividad(d).then(setMovs).catch(() => setMovs([]));
 
   const conHuella = async (accion) => {
     setError('');
@@ -21,6 +26,9 @@ export default function Registro() {
     try {
       const { direccion: d } = await accion();
       saldoMon(d).then(setSaldo).catch(() => setSaldo('?'));
+      cargarActividad(d);
+      // Suscribe la cuenta al webhook de Alchemy (si está configurado en el servidor)
+      fetch('/api/avisos/suscribir', { method: 'POST', body: JSON.stringify({ direccion: d }) }).catch(() => {});
       setPaso(3);
     } catch (e) {
       setError(e?.code === 'PRF_UNAVAILABLE'
@@ -46,6 +54,7 @@ export default function Registro() {
       const hash = await enviar();
       setTx({ hash, seg: ((performance.now() - t0) / 1000).toFixed(1) });
       saldoMon(direccion).then(setSaldo).catch(() => {});
+      cargarActividad(direccion);
     } catch (e) {
       setError(`No se pudo enviar la transacción: ${e?.shortMessage || 'error desconocido'}`);
     } finally {
@@ -54,7 +63,7 @@ export default function Registro() {
   };
 
   const probarFirma = async () => {
-    const msg = `Garante: prueba de firma ${new Date().toISOString()}`;
+    const msg = `Preste: prueba de firma ${new Date().toISOString()}`;
     setFirma(await firmar(msg));
   };
   const [paso, setPaso] = useState(0);
@@ -100,6 +109,14 @@ export default function Registro() {
     apagarCamara();
   };
 
+  useEffect(() => {
+    if (paso !== 3 || !direccion) return;
+    const id = setInterval(() => {
+      fetch(`/api/avisos?direccion=${direccion}`).then((r) => r.json()).then((j) => setAvisos(j.avisos)).catch(() => {});
+    }, 4000);
+    return () => clearInterval(id);
+  }, [paso, direccion]);
+
   const elegirFoto = (e) => {
     const archivo = e.target.files?.[0];
     if (!archivo) return;
@@ -120,7 +137,7 @@ export default function Registro() {
   return (
     <main className="auth">
       <section className="auth-lado">
-        <div className="logo">garante</div>
+        <div className="logo">preste</div>
         <div>
           <span className="etiqueta">Tu palabra ahora tiene historial</span>
           <h1>Tus préstamos, con reputación que nadie borra.</h1>
@@ -192,7 +209,7 @@ export default function Registro() {
               <h2>Tu huella será tu llave</h2>
               <p className="sub">Sin contraseñas ni frases semilla.</p>
               {error && <p className="error" role="alert">{error}</p>}
-              <button className="boton" disabled={ocupado} onClick={() => conHuella(() => crear(`garante-${ci || 'usuario'}`))}>
+              <button className="boton" disabled={ocupado} onClick={() => conHuella(() => crear(`preste-${ci || 'usuario'}`))}>
                 {ocupado ? 'Esperando tu huella…' : 'Crear cuenta con mi huella'}
               </button>
               <button className="boton sec" onClick={() => setPaso(1)}>Volver</button>
@@ -215,6 +232,24 @@ export default function Registro() {
                 <div className="dato">
                   <span>Confirmada en {tx.seg} s</span>
                   <a href={`https://testnet.monadexplorer.com/tx/${tx.hash}`} target="_blank" rel="noreferrer"><code>{tx.hash.slice(0, 26)}…</code></a>
+                </div>
+              )}
+              <div className="dato">
+                <span>Actividad reciente <b>(vía Alchemy)</b> · <a href="#" onClick={(e) => { e.preventDefault(); cargarActividad(direccion); }}>Actualizar</a></span>
+                {movs === null && <code>consultando…</code>}
+                {movs?.length === 0 && <code>Sin movimientos todavía</code>}
+                {movs?.map((m) => (
+                  <div key={m.hash}>
+                    <a href={`https://testnet.monadexplorer.com/tx/${m.hash}`} target="_blank" rel="noreferrer">
+                      <code>{m.tipo === 'recibido' ? '↓ recibiste' : '↑ enviaste'} {Number(m.valor).toFixed(4)} MON</code>
+                    </a>
+                  </div>
+                ))}
+              </div>
+              {avisos.length > 0 && (
+                <div className="dato">
+                  <span>Aviso en vivo (webhook de Alchemy)</span>
+                  {avisos.map((a) => <div key={a.id}><code>{a.a === direccion.toLowerCase() ? '↓' : '↑'} {Number(a.valor).toFixed(4)} {a.activo}</code></div>)}
                 </div>
               )}
               <p className="aviso"><a href="https://faucet.monad.xyz/" target="_blank" rel="noreferrer">Pedir MON de prueba (faucet)</a></p>

@@ -3,14 +3,14 @@ import NavInferior from '../_componentes/NavInferior';
 import Icono from '../_componentes/Icono';
 import Publicaciones from './Publicaciones';
 
-export const metadata = { title: 'Tablón · Garante' };
+export const metadata = { title: 'Tablón · Preste' };
 
 export default function Tablon() {
   return (
     <>
       <Encabezado titulo="Tablón" />
-      <main className="flex flex-col relative w-full pt-16 pb-20">
-        <div className="flex flex-col w-full px-margin pt-space-sm pb-6 space-y-4">
+      <main className="flex flex-col relative w-full pt-16 pb-20 md:pb-8">
+        <div className="flex flex-col w-full mx-auto max-w-5xl px-margin pt-space-sm pb-6 space-y-4">
           <div className="relative overflow-hidden rounded-xl bg-surface-container p-space-md shadow-lg shadow-surface-container-lowest/60">
             <div className="absolute -right-8 -top-8 w-32 h-32 bg-primary/10 rounded-full blur-2xl pointer-events-none" />
             <div className="flex items-start justify-between gap-space-sm relative z-10">
@@ -28,16 +28,6 @@ export default function Tablon() {
             </div>
           </div>
 
-          <button type="button" className="w-full h-13 py-3 px-space-md bg-primary hover:bg-primary-fixed-dim active:scale-[0.99] transition-all rounded-xl flex items-center justify-between shadow-lg shadow-primary/20 text-on-primary">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-on-primary/15 flex items-center justify-center">
-                <Icono nombre="add" tam={18} />
-              </div>
-              <span className="font-label-lg text-label-lg font-bold tracking-wide">Publicar en el Tablón</span>
-            </div>
-            <Icono nombre="arrow_forward" tam={20} />
-          </button>
-
           <Publicaciones />
 
           <div className="bg-surface-container-low rounded-xl p-space-md mt-2 flex items-start gap-3 shadow-inner">
@@ -47,7 +37,7 @@ export default function Tablon() {
             <div className="space-y-1">
               <span className="font-label-sm text-label-sm uppercase text-secondary font-bold tracking-wider block">Garante Protocol • Monad Network</span>
               <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
-                Garante no intermedia dinero ni es banco. El dinero se entrega en persona cara a cara; el protocolo registra la doble firma inmutable en Monad.
+                Preste no intermedia dinero ni es banco. El dinero se entrega en persona cara a cara; el protocolo registra la doble firma inmutable en Monad.
               </p>
             </div>
           </div>

@@ -14,7 +14,7 @@ export const monadTestnet = defineChain({
   id: 10143,
   name: 'Monad Testnet',
   nativeCurrency: { name: 'Monad', symbol: 'MON', decimals: 18 },
-  rpcUrls: { default: { http: ['https://testnet-rpc.monad.xyz'] } },
+  rpcUrls: { default: { http: [process.env.NEXT_PUBLIC_RPC_URL || 'https://testnet-rpc.monad.xyz'] } },
   blockExplorers: { default: { name: 'MonVision', url: 'https://testnet.monadexplorer.com' } },
 });
 
@@ -31,7 +31,7 @@ function abrirSesion(prfOutput) {
 
 export async function crearCuenta(nombre) {
   const { prfOutput } = await createPasskeyWithPrfOutput({
-    rp: { id: rpId(), name: 'Garante' },
+    rp: { id: rpId(), name: 'Preste' },
     user: { name: nombre, displayName: nombre },
   });
   return abrirSesion(prfOutput);
